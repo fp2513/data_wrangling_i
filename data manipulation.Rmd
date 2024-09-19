@@ -69,9 +69,66 @@ select(litters_df, litter_number, gd0_weight, everything())
 relocate(litters_df, litter_number, gd0_weight)
 ```
 
+Learning Assessment
+
+```{r}
+select(pups_df, litter_number, sex, pd_ears)
+```
+
 
 ##`filter`
 
+Select works on columns, filter() filters out rows
+Taking a variable inside the dataset, asking if it is true or false, if it is true then keep if false then do not
+
+```{r}
+filter(litters_df, gd_of_birth == 20)
+```
+double equal == ask whether this equal to that, asks a question (ask whether something is true about a variable)
+
+greater than, greater than equal to, not equal to (numeric variables)
+```{r}
+filter(litters_df, pups_born_alive > 8)
+filter(litters_df, pups_born_alive >= 8)
+filter(litters_df, pups_born_alive != 9)
+```
+
+looking at character variables
+```{r}
+filter(litters_df, group == "Low8")
+filter(litters_df, group %in% c("Low7", "Low8"))
+```
+not using the == since asking whether it is in Low7 or Low8 (question is or)
+
+```{r}
+filter(litters_df, group %in% c("Low7", "Low8"), pups_born_alive == 8)
+```
+here, two things true at the same time (either Low7 or Low8) AND pups born alive equals to 8
+
+This is case sensitive, need to be specific about lower and upper case
+
+to get rid of rows with missing data
+doing it on everything will drop all rows with missing variables
+```{r}
+drop_na(litters_df)
+```
+or could specify
+
+```{r}
+drop_na(litters_df, gd0_weight)
+```
+
+Notice that we are not saving any of the new data frame (we are always going back to the original litters_df)
+normally could do new_litters_df = drop_na(litters_df, gd0_weight) to create a new data frame
+
+Learning assessment 
+```{r}
+filter(pups_df, sex == 1)
+filter(pups_df, pd_walk < 11, sex == 2)
+```
 
 
 ##`mutate`
+
+
+##`arrange`
