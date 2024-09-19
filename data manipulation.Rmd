@@ -152,6 +152,21 @@ mutate(
 
 ##`arrange`
 
+goes from lightest gd0_weight to heaviest
+```{r}
+arrange(litters_df, gd0_weight)
+```
+
+or go from heaviest to lightest
+```{r}
+arrange(litters_df, desc(gd0_weight))
+```
+
+arrange by multiple things
+```{r}
+arrange(litters_df, pups_born_alive, gd0_weight)
+```
+handy to have if need to arrange participant numbers etc. 
 
 
 ##`PIPING`
