@@ -1,128 +1,77 @@
 ---
-title: "Data Import"
+title: "Data Manipulation"
 output: github_document
 ---
 
 ```{r setup, echo = FALSE, message = FALSE}
 library(tidyverse)
-library(readxl)
-library(haven)
 ```
 
-This document will show how to import data
+This document will show how to *manipulate* data
 
-#Import the FAS litters CSV 
-
-Import the dataset and clean the names
-
-```{r}
-litters_df = read_csv("data_import_examples/FAS_litters.csv")
-
-litters_df = janitor::clean_names(litters_df)
-```
-
-## Look at the dataset 
-
-```{r}
-litters_df
-
-head(litters_df)
-tail(litters_df, 10)
-```
-
-```{r eval = FALSE}
-view(litters_df)
-
-```
-
-## Learnign assessment import with FAS_pups.csv absolute and relative paths
-
-Use relative paths
-
-```{r}
-pups_df = read_csv("data_import_examples/FAS_pups.csv")
-pups_df = janitor::clean_names(pups_df)
-
-pups_df
-
-```
-
-Use absolute path
-
-```{r, eval = FALSE}
-pups_df = read_csv("/Users/florapang/Desktop/Data Science/20240917 Data Wrangling i/data_import_examples/FAS_pups.csv")
-```
-
-## Look at read_csv options 
-
-Skip rows and turn off column names 
+Import the two datasets that we're going to manipulation 
 
 ```{r}
 litters_df = 
-  read_csv(
-    file = 'data_import_examples/FAS_litters.csv',
-    col_names = FALSE,
-    skip = 1
-  )
-```
-
-## What about missing data
-
-NA, empty cells and . are all supposed to be seen as missing values
-
-```{r}
-litters_df = 
-  read_csv(
-    file = 'data_import_examples/FAS_litters.csv',
-    na = c("NA", "", ".")
-  )
-
-#calculate the mean of something but it hass missing values
+  read_csv("data_import_examples/FAS_litters.csv", na = c("NA", ",", "."))
 
 litters_df = janitor::clean_names(litters_df)
 
-pull(litters_df, gd0_weight)
+pups_df = 
+  read_csv("data_import_examples/FAS_pups.csv", na = c("NA", ",", "."))
+
+pups_df = 
+    janitor::clean_names(pups_df)
+
 ```
 
-What if we code 'group' as a factor variable? (current is a character)
+## `Select`
+
+Use `select()` to select variables 
 
 ```{r}
-litters_df = 
-  read_csv(
-    file = "data_import_examples/FAS_litters.csv",
-    na = c("NA", "", "."),
-    col_types = cols(
-      Group = col_factor()
-    )
-  )
+select(litters_df, group, litter_number, gd0_weight)
 ```
 
-
-## Import an excel file
-
-Import MLB 2011 summary data
-
+selecting everything from group to gd18_weight
 ```{r}
-
-#need to load another library other than tidyverse, best practice to load all 
-#libraries in the same setup chunk
-
-mlb_df = read_excel("data_import_examples/mlb11.xlsx", sheet = 'mlb11')
+select(litters_df, group:gd18_weight)
 ```
 
-## Import DAD data
-
+can select to remove things that you don't want 
 ```{r}
-pulse_df = read_sas("data_import_examples/public_pulse_data.sas7bdat")
+select(litters_df, -pups_survive)
 ```
 
-## Never use read.csv()
-
-Use read_csv (tibble) rather than read.csv
-
+can combine
 ```{r}
-litters_df = read_csv("data_import_examples/FAS_litters.csv")
-
-litters_df$S
+select(litters_df, -(group:gd18_weight))
 ```
 
+can select for suffixes
+```{r}
+select(litters_df, starts_with("gd"))
+
+select(litters_df, contains ("pups"))
+```
+
+can rename as I go (select() selects out a group and renames it) rename() keeps the entire dataframe but renames the column
+```{r}
+select(litters_df, GROUP = group)
+
+rename(litters_df, GROUP = group)
+```
+
+these two do the same thing to relocate a column, just need to indicate that keeping everything in select
+```{r}
+select(litters_df, litter_number, gd0_weight, everything())
+
+relocate(litters_df, litter_number, gd0_weight)
+```
+
+
+##`filter`
+
+
+
+##`mutate`
