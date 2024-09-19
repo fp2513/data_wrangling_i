@@ -170,3 +170,54 @@ handy to have if need to arrange participant numbers etc.
 
 
 ##`PIPING`
+
+If i know that when taking a dataframe I want to do multiple things to it 
+
+```{r}
+litters_df = 
+  read_csv("data_import_examples/FAS_litters.csv", na = c("NA", ".", "")) %>%   janitor::clean_names() %>% 
+  select(-pups_born_alive) %>% 
+  filter(group == "Con7") %>% 
+  mutate(
+    wt_gain = 
+      gd18_weight - gd0_weight,
+    group = str_to_lower(group)
+  )
+```
+
+
+```{r}
+litters_df = 
+  read_csv("data_import_examples/FAS_litters.csv", na = c("NA", ".", "")) %>%   janitor::clean_names() %>% 
+  mutate(wt_gain = gd18_weight - gd0_weight) %>% 
+  lm(wt_gain ~ pups_born_alive, data = _)
+```
+The reason why this part is not running is being this pipe property %>% is not exactly synonymous to the other one that he was using in class
+
+Learning Assessment 
+
+```{r}
+pups_df = 
+  read_csv("data_import_examples/FAS_pups.csv", na = c("NA", ".", "")) %>% 
+  janitor::clean_names() %>% 
+  select(sex == 1) %>% 
+  filter(pd_ears) %>% 
+
+```
+
+#Data Export
+
+```{r}
+litters_df = 
+  read_csv("data_import_examples/FAS_litters.csv", na = c("NA", ".", "")) %>%   janitor::clean_names() %>% 
+  select(-pups_born_alive) %>% 
+  filter(group == "Con7") %>% 
+  mutate(
+    wt_gain = 
+      gd18_weight - gd0_weight,
+    group = str_to_lower(group)
+  )
+
+write_csv(litters_df, "data_import_examples/cleaned_fas_litters.csv")
+```
+
