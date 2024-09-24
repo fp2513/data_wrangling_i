@@ -1,7 +1,9 @@
 ---
-title: "Data Import"
+title: "Data Tidying"
 output: github_document
 ---
+
+Select and pull only pulling out numbers (more rare) where as select will select a column 
 
 ```{r setup, echo = FALSE, message = FALSE}
 library(tidyverse)
@@ -9,120 +11,96 @@ library(readxl)
 library(haven)
 ```
 
-This document will show how to import data
+```{r}
+pulse_df = 
+  read_sas("data_import_examples/public_pulse_data.sas7bdat")
+  janitor::clean_names()
+```
 
-#Import the FAS litters CSV 
-
-Import the dataset and clean the names
+This needs to go from wide to long format
+Here the columns are values (here data rectangle where the depression indicators BDI are all spread across 4 columns according to their visits, where as want all the BDI scores in one column)
 
 ```{r}
-litters_df = read_csv("data_import_examples/FAS_litters.csv")
-
-litters_df = janitor::clean_names(litters_df)
-```
-
-## Look at the dataset 
-
-```{r}
-litters_df
-
-head(litters_df)
-tail(litters_df, 10)
-```
-
-```{r eval = FALSE}
-view(litters_df)
-
-```
-
-## Learnign assessment import with FAS_pups.csv absolute and relative paths
-
-Use relative paths
-
-```{r}
-pups_df = read_csv("data_import_examples/FAS_pups.csv")
-pups_df = janitor::clean_names(pups_df)
-
-pups_df
-
-```
-
-Use absolute path
-
-```{r, eval = FALSE}
-pups_df = read_csv("/Users/florapang/Desktop/Data Science/20240917 Data Wrangling i/data_import_examples/FAS_pups.csv")
-```
-
-## Look at read_csv options 
-
-Skip rows and turn off column names 
-
-```{r}
-litters_df = 
-  read_csv(
-    file = 'data_import_examples/FAS_litters.csv',
-    col_names = FALSE,
-    skip = 1
+pulse_tidy_df =
+  pulse_df %>% 
+  pivot_longer(
+    cols = BDIScore_BL:BDIScore_01m:BDIScore_06m:BDIScore_12m,
+    names_to = "visit",
+    values_to = "bdi_score",
+    names_prefix = "BDIScore_"
   )
 ```
 
-## What about missing data
+The names_prefix takes off the BDIScore_ prefix so that the data becomes cleaner and not every entry has the prefix 
 
-NA, empty cells and . are all supposed to be seen as missing values
+Or could do differently with mutate
+
+```{r}
+pulse_tidy_df =
+  pulse_df %>% 
+  pivot_longer(
+    cols = BDIScore_BL:BDIScore_01m:BDIScore_06m:BDIScore_12m,
+    names_to = "visit",
+    values_to = "bdi_score",
+    names_prefix = "BDIScore_"
+  ) %>% 
+  mutate(
+    visit = replace(visit, visit == "BL", "00m")
+  ) %>% 
+  relocate(Id, visit)
+```
+
+Do one more example.
+Here weight are spread across two columns both are gestational day 
+Need to make there only one gestational weight column, (from 2 columns and 1 row to 1 column to 2 rows)
 
 ```{r}
 litters_df = 
-  read_csv(
-    file = 'data_import_examples/FAS_litters.csv',
-    na = c("NA", "", ".")
+  read_csv("data_import_examples/FAS_litters.csv", na = c("NA", ".", "")) %>% 
+  janitor::clean_names()
+```
+
+```{r}
+litters_tidy_df =
+  litters_df %>% 
+    janitor::clean_names() %>% 
+  pivot_longer(
+    cols = gd0_weight:gd18_weight,
+    names_to = "gd_time",
+    values_to = "weight"
+  ) %>% 
+  mutate(
+    gd_time = case_match(
+      gd_time,
+      "gd0_weight" ~ 0,
+      "gd18_weight" ~18
+    ))
+```
+
+Case match, any time you see this value you want to rename it to something else
+In gd_time, anytime seeing gd0_weight it becomes 0
+
+## Pivot wider
+
+Let's make up an analysis results table 
+
+```{r}
+analysis_df = 
+  tibble(
+    group = c("treatment", "treatment", "control", "control"),
+    time = c("pre", "post", "pre", "post"),
+    mean = c(4, 10, 4.2, 5)
   )
-
-#calculate the mean of something but it hass missing values
-
-litters_df = janitor::clean_names(litters_df)
-
-pull(litters_df, gd0_weight)
 ```
 
-What if we code 'group' as a factor variable? (current is a character)
+Need to pivot wider for human readability (currently good for coding but hard to draw conclusions)
 
 ```{r}
-litters_df = 
-  read_csv(
-    file = "data_import_examples/FAS_litters.csv",
-    na = c("NA", "", "."),
-    col_types = cols(
-      Group = col_factor()
-    )
-  )
-```
-
-
-## Import an excel file
-
-Import MLB 2011 summary data
-
-```{r}
-
-#need to load another library other than tidyverse, best practice to load all 
-#libraries in the same setup chunk
-
-mlb_df = read_excel("data_import_examples/mlb11.xlsx", sheet = 'mlb11')
-```
-
-## Import DAD data
-
-```{r}
-pulse_df = read_sas("data_import_examples/public_pulse_data.sas7bdat")
-```
-
-## Never use read.csv()
-
-Use read_csv (tibble) rather than read.csv
-
-```{r}
-litters_df = read_csv("data_import_examples/FAS_litters.csv")
-
-litters_df$S
+analysis_df %>% 
+  pivot_wider(
+    names_from = time,
+    values_from = mean
+  ) %>% 
+  knitr::kable()
 ```
 
